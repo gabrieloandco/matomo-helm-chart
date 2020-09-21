@@ -33,32 +33,30 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          {{- if .Values.config.enabled }}
-          volumeMounts:
-            - name: config-volume
-              mountPath: /usr/src/matomo/config/config.ini.php
-              subPath: config.ini.php
-          {{- end }}
+          envFrom:
+            - secretRef:
+                name: {{ template "matomo.fullname" . }}
           ports:
             - name: http
               containerPort: 80
               protocol: TCP
+            - name: https
+              containerPort: 443
+              protocol: TCP
           livenessProbe:
             httpGet:
               path: /
-              port: http
+              port: https
+              scheme: HTTPS
+            initialDelaySeconds: 90
           readinessProbe:
             httpGet:
               path: /
-              port: http
+              port: https
+              scheme: HTTPS
+            initialDelaySeconds: 90
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
-      {{- if .Values.config.enabled }}
-      volumes:
-        - name: config-volume
-          configMap:
-            name: {{ template "matomo.fullname" . }}
-      {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

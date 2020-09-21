@@ -10,11 +10,11 @@ spec:
   entryPoints:
     - websecure
   routes:
-    - match: Host(`{{ .Values.traefik.host }}`)
+    - match: Host(`{{ .Values.matomo.host }}`)
       kind: Rule
       services:
         - name: {{ include "matomo.fullname" . }}
-          port: 80
+          port: {{ .Values.service.port }}
   tls:
     certResolver: letsencrypt-tls
 {{- end }}
