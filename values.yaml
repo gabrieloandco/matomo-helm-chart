@@ -41,17 +41,22 @@ service:
   port: 80
 
 ingress:
-  enabled: false
+  enabled: true
+  # types are default and traefik
+  #type: default
+  type: traefik
   annotations: {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   hosts:
     - host: chart-example.local
-      paths: []
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
+      paths: [ / ]
+  tls:
+    default: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
+    traefik: letsencrypt-tls
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
@@ -84,21 +89,15 @@ tags:
 mariadb:
   image:
     debug: true
-  rootUser:
+  architecture: standalone
+  auth:
+    rootPassword: matomo
+    forcePassword: true
+    database: matomo
+    username: matomo
     password: matomo
-    forcePassword: true
-  db:
-    name: matomo
-    user: matomo
-    password: matomo
-    forcePassword: true
-  replication:
-    enabled: true
-    user: replication
-    password: replication
-    forcePassword: true
 
-  master:
+  primary:
     config: |-
       [mysqld]
       skip-name-resolve
@@ -125,35 +124,6 @@ mariadb:
       port=3306
       socket=/opt/bitnami/mariadb/tmp/mysql.sock
       pid-file=/opt/bitnami/mariadb/tmp/mysqld.pid
-
-  slave:
-    config: |-
-      [mysqld]
-      skip-name-resolve
-      explicit_defaults_for_timestamp
-      basedir=/opt/bitnami/mariadb
-      port=3306
-      socket=/opt/bitnami/mariadb/tmp/mysql.sock
-      tmpdir=/opt/bitnami/mariadb/tmp
-      max_allowed_packet=128M
-      bind-address=0.0.0.0
-      pid-file=/opt/bitnami/mariadb/tmp/mysqld.pid
-      log-error=/opt/bitnami/mariadb/logs/mysqld.log
-      character-set-server=UTF8
-      collation-server=utf8_general_ci
-
-      [client]
-      port=3306
-      socket=/opt/bitnami/mariadb/tmp/mysql.sock
-      default-character-set=UTF8
-
-      [manager]
-      port=3306
-      socket=/opt/bitnami/mariadb/tmp/mysql.sock
-      pid-file=/opt/bitnami/mariadb/tmp/mysqld.pid
-
-traefik:
-  enabled: true
 
 matomo:
   host: chart-example.local

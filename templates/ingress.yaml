@@ -1,7 +1,10 @@
 {{- if .Values.ingress.enabled -}}
 {{- $fullName := include "matomo.fullname" . -}}
 {{- $svcPort := .Values.service.port -}}
-{{- if semverCompare ">=1.14-0" .Capabilities.KubeVersion.GitVersion -}}
+{{- if eq .Values.ingress.type "default" -}}
+{{- if semverCompare ">=1.19-0" .Capabilities.KubeVersion.GitVersion -}}
+apiVersion: networking.k8s.io/v1
+{{- else if semverCompare ">=1.14-0" .Capabilities.KubeVersion.GitVersion -}}
 apiVersion: networking.k8s.io/v1beta1
 {{- else -}}
 apiVersion: extensions/v1beta1
@@ -16,9 +19,9 @@ metadata:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
-  {{- if .Values.ingress.tls }}
+  {{- if .Values.ingress.tls.default }}
   tls:
-    {{- range .Values.ingress.tls }}
+    {{- range .Values.ingress.tls.default }}
     - hosts:
         {{- range .hosts }}
         - {{ . | quote }}
@@ -38,4 +41,24 @@ spec:
               servicePort: {{ $svcPort }}
           {{- end }}
     {{- end }}
-  {{- end }}
+{{- end }}
+{{- else if eq .Values.ingress.type "traefik" -}}
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: {{ include "matomo.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+  {{- include "matomo.labels" . | nindent 4 }}
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`{{ .Values.matomo.host }}`)
+      kind: Rule
+      services:
+        - name: {{ $fullName }}
+          port: {{ $svcPort }}
+  tls:
+    certResolver: {{ .Values.ingress.tls.traefik }}
+{{- end }}
