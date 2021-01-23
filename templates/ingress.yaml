@@ -41,7 +41,6 @@ spec:
               servicePort: {{ $svcPort }}
           {{- end }}
     {{- end }}
-{{- end }}
 {{- else if eq .Values.ingress.type "traefik" -}}
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
@@ -52,13 +51,23 @@ metadata:
   {{- include "matomo.labels" . | nindent 4 }}
 spec:
   entryPoints:
+    {{- if .Values.ingress.tls.traefik }}
     - websecure
+    {{- else }}
+    - web
+    {{- end }}
   routes:
-    - match: Host(`{{ .Values.matomo.host }}`)
+    {{- range .Values.ingress.hosts }}
+    {{- $host := .host }}
+    - match: Host(`{{ $host }}`) && ({{ include "matomo.trafik.joinpaths" (dict "paths" .paths) }})
       kind: Rule
       services:
         - name: {{ $fullName }}
           port: {{ $svcPort }}
+    {{- end }}
+  {{- if .Values.ingress.tls.traefik }}
   tls:
     certResolver: {{ .Values.ingress.tls.traefik }}
+  {{- end }}
+{{- end }}
 {{- end }}

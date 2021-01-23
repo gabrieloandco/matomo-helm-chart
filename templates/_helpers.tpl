@@ -60,3 +60,11 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{- define "matomo.trafik.joinpaths" -}}
+{{- $dict := dict "path" (list) -}}
+{{- range .paths -}}
+{{- $noop := printf "Path(`%s`)" . | append $dict.path | set $dict "path" -}}
+{{- end -}}
+{{- join " || " $dict.path -}}
+{{- end }}
