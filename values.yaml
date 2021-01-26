@@ -86,13 +86,16 @@ affinity: {}
 tags:
   redis: false
 
+redis:
+  cluster:
+    enabled: false
+
 mariadb:
   image:
     debug: true
   architecture: standalone
   auth:
     rootPassword: matomo
-    forcePassword: true
     database: matomo
     username: matomo
     password: matomo
