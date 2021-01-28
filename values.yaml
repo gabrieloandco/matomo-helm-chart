@@ -87,6 +87,7 @@ tags:
   redis: false
 
 redis:
+  password: matomo
   cluster:
     enabled: false
 

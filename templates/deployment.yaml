@@ -27,6 +27,43 @@ spec:
       serviceAccountName: {{ include "matomo.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - args:
+            - for i in {30..0}; do redis-cli -h ${MATOMO_CACHE_HOST} -a ${MATOMO_CACHE_PASSWORD} ping &> /dev/null;
+              if [[ $? == 0 ]]; then
+              echo "Connection to Redis established."; exit 0; fi;
+              echo "Redis init process in progress..."; sleep 1; done;
+              echo "No connection to Redis could be established!"; exit 1;
+          command:
+            - /bin/bash
+            - -c
+          envFrom:
+            - secretRef:
+                name: {{ template "matomo.fullname" . }}
+          image: library/redis
+          imagePullPolicy: Always
+          name: redis-init
+          resources:
+            requests:
+              memory: 50Mi
+        - args:
+            - for i in {30..0}; do mysql -h${MATOMO_DATABASE_HOST} -u${MATOMO_DATABASE_USER} -p${MATOMO_DATABASE_PASSWORD} -N -e "SELECT 1" &> /dev/null;
+              if [[ $? == 0 ]]; then
+              echo "Connection to MariaDB established."; exit 0; fi;
+              echo "MariaDB init process in progress..."; sleep 1; done;
+              echo "No connection to MariaDB could be established!"; exit 1;
+          command:
+            - /bin/bash
+            - -c
+          envFrom:
+            - secretRef:
+                name: {{ template "matomo.fullname" . }}
+          image: library/mariadb
+          imagePullPolicy: Always
+          name: mariadb-init
+          resources:
+            requests:
+              memory: 50Mi
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -38,6 +75,8 @@ spec:
                 name: {{ template "matomo.fullname" . }}
           {{- with .Values.matomo.env }}
           env:
+            - name: MATOMO_SKIP_BOOTSTRAP
+              value: no # TODO: set to yes if bootstrapping succeeded on pvc
             {{- range $key, $val := . }}
             - name: {{ $key }}
               value: {{ $val | quote }}

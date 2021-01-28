@@ -59,7 +59,7 @@ spec:
   routes:
     {{- range .Values.ingress.hosts }}
     {{- $host := .host }}
-    - match: Host(`{{ $host }}`) && ({{ include "matomo.trafik.joinpaths" (dict "paths" .paths) }})
+    - match: Host(`{{ $host }}`) && ({{ include "matomo.traefik.joinpaths" (dict "paths" .paths) }})
       kind: Rule
       services:
         - name: {{ $fullName }}
