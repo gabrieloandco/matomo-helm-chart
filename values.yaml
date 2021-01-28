@@ -41,10 +41,9 @@ service:
   port: 80
 
 ingress:
-  enabled: true
+  enabled: false
   # types are default and traefik
-  #type: default
-  type: traefik
+  type: default
   annotations: {}
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
@@ -52,11 +51,11 @@ ingress:
     - host: chart-example.local
       paths: [ / ]
   tls:
-    default: []
-    #  - secretName: chart-example-tls
-    #    hosts:
-    #      - chart-example.local
-    traefik: ""
+    default:
+      - secretName: chart-example-tls
+        hosts:
+          - chart-example.local
+    traefik: chart-example-tls
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
@@ -102,7 +101,7 @@ mariadb:
     password: matomo
 
   primary:
-    config: |-
+    configuration: |-
       [mysqld]
       skip-name-resolve
       explicit_defaults_for_timestamp
