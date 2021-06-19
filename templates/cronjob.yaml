@@ -1,0 +1,189 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "matomo.fullname" . }}-achive
+  labels:
+  {{- include "matomo.labels" . | nindent 4 }}
+spec:
+  schedule: "0 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: "OnFailure"
+          initContainers:
+            - args:
+                - for i in {30..0}; do redis-cli -h ${MATOMO_CACHE_HOST} -a ${MATOMO_CACHE_PASSWORD} ping &> /dev/null;
+                  if [[ $? == 0 ]]; then
+                  echo "Connection to Redis established."; exit 0; fi;
+                  echo "Redis init process in progress..."; sleep 1; done;
+                  echo "No connection to Redis could be established!"; exit 1;
+              command:
+                - /bin/bash
+                - -c
+              envFrom:
+                - secretRef:
+                    name: {{ template "matomo.fullname" . }}
+              image: library/redis
+              imagePullPolicy: Always
+              name: redis-init
+              resources:
+                requests:
+                  memory: 50Mi
+            - args:
+                - for i in {30..0}; do mysql -h${MATOMO_DATABASE_HOST} -u${MATOMO_DATABASE_USER} -p${MATOMO_DATABASE_PASSWORD} -N -e "SELECT 1" &> /dev/null;
+                  if [[ $? == 0 ]]; then
+                  echo "Connection to MariaDB established."; exit 0; fi;
+                  echo "MariaDB init process in progress..."; sleep 1; done;
+                  echo "No connection to MariaDB could be established!"; exit 1;
+              command:
+                - /bin/bash
+                - -c
+              envFrom:
+                - secretRef:
+                    name: {{ template "matomo.fullname" . }}
+              image: library/mariadb
+              imagePullPolicy: Always
+              name: mariadb-init
+              resources:
+                requests:
+                  memory: 50Mi
+          containers:
+            - name: {{ .Chart.Name }}
+              securityContext:
+                {{- toYaml .Values.securityContext | nindent 16 }}
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              envFrom:
+                - secretRef:
+                    name: {{ template "matomo.fullname" . }}
+              {{- with .Values.matomo.env }}
+              env:
+                - name: MATOMO_SKIP_BOOTSTRAP
+                  value: yes
+                {{- range $key, $val := . }}
+                - name: {{ $key }}
+                  value: {{ $val | quote }}
+              {{- end }}
+              {{- end }}
+              command:
+                - /bin/bash
+                - -c
+              args:
+                - . /opt/bitnami/scripts/matomo-env.sh &&
+                  . /opt/bitnami/scripts/libbitnami.sh &&
+                  . /opt/bitnami/scripts/liblog.sh &&
+                  /opt/bitnami/scripts/php/setup.sh &&
+                  /opt/bitnami/scripts/mysql-client/setup.sh &&
+                  /opt/bitnami/scripts/matomo/setup.sh &&
+                  /post-init.sh &&
+                  /opt/bitnami/php/bin/php /opt/bitnami/matomo/console core:archive
+              volumeMounts:
+                - name: data
+                  mountPath: "{{ .Values.persistence.mountPath }}"
+                  subPath: "{{ .Values.persistence.subPath }}"
+              resources:
+                {{- toYaml .Values.resources | nindent 16 }}
+          volumes:
+            {{- if and .Values.persistence.enabled }}
+            - name: data
+              persistentVolumeClaim:
+                claimName: {{ if .Values.persistence.existingClaim }}{{ .Values.persistence.existingClaim }}{{- else }}{{ template "matomo.fullname" . }}{{- end }}
+            {{- else }}
+            - name: data
+              emptyDir: {}
+      {{- end }}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "matomo.fullname" . }}-scheduled-tasks
+  labels:
+  {{- include "matomo.labels" . | nindent 4 }}
+spec:
+  schedule: "*/5 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: "Never"
+          initContainers:
+            - args:
+                - for i in {30..0}; do redis-cli -h ${MATOMO_CACHE_HOST} -a ${MATOMO_CACHE_PASSWORD} ping &> /dev/null;
+                  if [[ $? == 0 ]]; then
+                  echo "Connection to Redis established."; exit 0; fi;
+                  echo "Redis init process in progress..."; sleep 1; done;
+                  echo "No connection to Redis could be established!"; exit 1;
+              command:
+                - /bin/bash
+                - -c
+              envFrom:
+                - secretRef:
+                    name: {{ template "matomo.fullname" . }}
+              image: library/redis
+              imagePullPolicy: Always
+              name: redis-init
+              resources:
+                requests:
+                  memory: 50Mi
+            - args:
+                - for i in {30..0}; do mysql -h${MATOMO_DATABASE_HOST} -u${MATOMO_DATABASE_USER} -p${MATOMO_DATABASE_PASSWORD} -N -e "SELECT 1" &> /dev/null;
+                  if [[ $? == 0 ]]; then
+                  echo "Connection to MariaDB established."; exit 0; fi;
+                  echo "MariaDB init process in progress..."; sleep 1; done;
+                  echo "No connection to MariaDB could be established!"; exit 1;
+              command:
+                - /bin/bash
+                - -c
+              envFrom:
+                - secretRef:
+                    name: {{ template "matomo.fullname" . }}
+              image: library/mariadb
+              imagePullPolicy: Always
+              name: mariadb-init
+              resources:
+                requests:
+                  memory: 50Mi
+          containers:
+            - name: {{ .Chart.Name }}
+              securityContext:
+                {{- toYaml .Values.securityContext | nindent 16 }}
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+              imagePullPolicy: {{ .Values.image.pullPolicy }}
+              envFrom:
+                - secretRef:
+                    name: {{ template "matomo.fullname" . }}
+              {{- with .Values.matomo.env }}
+              env:
+                {{- range $key, $val := . }}
+                - name: {{ $key }}
+                  value: {{ $val | quote }}
+              {{- end }}
+              {{- end }}
+              command:
+                - /bin/bash
+                - -c
+              args:
+                - . /opt/bitnami/scripts/matomo-env.sh &&
+                  . /opt/bitnami/scripts/libbitnami.sh &&
+                  . /opt/bitnami/scripts/liblog.sh &&
+                  /opt/bitnami/scripts/php/setup.sh &&
+                  /opt/bitnami/scripts/mysql-client/setup.sh &&
+                  /opt/bitnami/scripts/matomo/setup.sh &&
+                  /post-init.sh &&
+                  /opt/bitnami/php/bin/php /opt/bitnami/matomo/console core:run-scheduled-tasks
+              volumeMounts:
+                - name: data
+                  mountPath: "{{ .Values.persistence.mountPath }}"
+                  subPath: "{{ .Values.persistence.subPath }}"
+              resources:
+                {{- toYaml .Values.resources | nindent 16 }}
+          volumes:
+            {{- if and .Values.persistence.enabled }}
+            - name: data
+              persistentVolumeClaim:
+                claimName: {{ if .Values.persistence.existingClaim }}{{ .Values.persistence.existingClaim }}{{- else }}{{ template "matomo.fullname" . }}{{- end }}
+            {{- else }}
+            - name: data
+              emptyDir: {}
+  {{- end }}

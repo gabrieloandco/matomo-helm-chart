@@ -25,6 +25,3 @@ Most relevant parameters, if you need an advanced configuration, take a look int
 | `matomo.website_host` | Host of the tracked website | `https://tracked-website.local` |
 | `matomo.website_name` | Name of the tracked website | `Tracked Website` |
 | `matomo.env` | Additional Environment variables, e.g. to configure SMTP | `{}` |
-
-
-

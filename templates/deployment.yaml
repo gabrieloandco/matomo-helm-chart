@@ -101,8 +101,21 @@ spec:
               port: https
               scheme: HTTPS
             initialDelaySeconds: 90
+          volumeMounts:
+            - name: data
+              mountPath: "{{ .Values.persistence.mountPath }}"
+              subPath: "{{ .Values.persistence.subPath }}"
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        {{- if and .Values.persistence.enabled }}
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ if .Values.persistence.existingClaim }}{{ .Values.persistence.existingClaim }}{{- else }}{{ template "matomo.fullname" . }}{{- end }}
+        {{- else }}
+        - name: data
+          emptyDir: {}
+        {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

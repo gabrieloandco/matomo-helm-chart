@@ -23,6 +23,65 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 
+persistence:
+  ## If true, matomo will create/use a Persistent Volume Claim
+  ## If false, use emptyDir
+  ##
+  enabled: false
+
+  ## matomo data Persistent Volume access modes
+  ## Must match those of existing PV or dynamic provisioner
+  ## Ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+  ##
+  accessModes:
+    - ReadWriteOnce
+
+  ## matomo data Persistent Volume Claim annotations
+  ##
+  annotations: {}
+
+  ## matomo data Persistent Volume existing claim name
+  ## Requires matomo.persistentVolume.enabled: true
+  ## If defined, PVC must be created manually before volume will be bound
+  existingClaim: ""
+
+  ## matomo data Persistent Volume mount root path
+  ##
+  mountPath: /bitnami
+
+  ## matomo data Persistent Volume size
+  ##
+  size: 2Gi
+
+  ## matomo data Persistent Volume Storage Class
+  ## If defined, storageClassName: <storageClass>
+  ## If set to "-", storageClassName: "", which disables dynamic provisioning
+  ## If undefined (the default) or set to null, no storageClassName spec is
+  ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+  ##   GKE, AWS & OpenStack)
+  ##
+  # storageClass: "-"
+
+  ## matomo data Persistent Volume Binding Mode
+  ## If defined, volumeBindingMode: <volumeBindingMode>
+  ## If undefined (the default) or set to null, no volumeBindingMode spec is
+  ##   set, choosing the default mode.
+  ##
+  # volumeBindingMode: ""
+
+  ## Subdirectory of matomo data Persistent Volume to mount
+  ## Useful if the volume's root directory is not empty
+  ##
+  subPath: ""
+
+  ## selector can be used to match an existing PersistentVolume
+  ## selector:
+  ##   matchLabels:
+  ##     app: my-app
+  ##
+  selector: {}
+
+
 podAnnotations: {}
 
 podSecurityContext: {}
@@ -86,13 +145,12 @@ tags:
   redis: false
 
 redis:
+  architecture: standalone
   password: matomo
   cluster:
     enabled: false
 
 mariadb:
-  image:
-    debug: true
   architecture: standalone
   auth:
     rootPassword: matomo
