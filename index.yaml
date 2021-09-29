@@ -1,0 +1,96 @@
+apiVersion: v1
+entries:
+  mariadb:
+  - annotations:
+      category: Database
+    apiVersion: v2
+    appVersion: 10.5.10
+    created: "2021-09-29T09:52:41.318289947+02:00"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      tags:
+      - bitnami-common
+      version: 1.x.x
+    description: Fast, reliable, scalable, and easy to use open-source relational
+      database system. MariaDB Server is intended for mission-critical, heavy-load
+      production systems as well as for embedding into mass-deployed software. Highly
+      available MariaDB cluster.
+    digest: 2968a101b970ea4ea660dbba389ef16acfd6fbd0159b8b549972d71c6fa1ab30
+    home: https://github.com/bitnami/charts/tree/master/bitnami/mariadb
+    icon: https://bitnami.com/assets/stacks/mariadb/img/mariadb-stack-220x234.png
+    keywords:
+    - mariadb
+    - mysql
+    - database
+    - sql
+    - prometheus
+    maintainers:
+    - email: containers@bitnami.com
+      name: Bitnami
+    name: mariadb
+    sources:
+    - https://github.com/bitnami/bitnami-docker-mariadb
+    - https://github.com/prometheus/mysqld_exporter
+    - https://mariadb.org
+    urls:
+    - https://bitburst-gmbh.github.io/matomo-helm-chart/charts/mariadb-9.3.11.tgz
+    version: 9.3.11
+  matomo:
+  - apiVersion: v2
+    appVersion: 4.3.1
+    created: "2021-09-29T09:52:41.310362459+02:00"
+    dependencies:
+    - name: mariadb
+      repository: https://charts.bitnami.com/bitnami
+      version: 9.3.11
+    - name: redis
+      repository: https://charts.bitnami.com/bitnami
+      version: 14.1.1
+    description: A Helm chart for Kubernetes
+    digest: f29e590fabc2ec8e08e0e35fa160235ef9382e75b6ee6897d5f05faac1e387d9
+    icon: https://upload.wikimedia.org/wikipedia/commons/c/c9/Matomo_Logo.svg
+    maintainers:
+    - email: tina@ideaplexus.com
+      name: Tina Burschka
+      url: https://www.ideaplexus.com/open-source.html
+    name: matomo
+    type: application
+    urls:
+    - https://bitburst-gmbh.github.io/matomo-helm-chart/matomo-4.3.1+01.tgz
+    version: 4.3.1+01
+  redis:
+  - annotations:
+      category: Database
+    apiVersion: v2
+    appVersion: 6.2.3
+    created: "2021-09-29T09:52:41.322970641+02:00"
+    dependencies:
+    - name: common
+      repository: https://charts.bitnami.com/bitnami
+      tags:
+      - bitnami-common
+      version: 1.x.x
+    description: Open source, advanced key-value store. It is often referred to as
+      a data structure server since keys can contain strings, hashes, lists, sets
+      and sorted sets.
+    digest: 7487e3377777280833626891de76260df956b37f36dcee65b335f632e4401a9e
+    home: https://github.com/bitnami/charts/tree/master/bitnami/redis
+    icon: https://bitnami.com/assets/stacks/redis/img/redis-stack-220x234.png
+    keywords:
+    - redis
+    - keyvalue
+    - database
+    maintainers:
+    - email: containers@bitnami.com
+      name: Bitnami
+    - email: cedric@desaintmartin.fr
+      name: desaintmartin
+    name: redis
+    sources:
+    - https://github.com/bitnami/bitnami-docker-redis
+    - http://redis.io/
+    urls:
+    - https://bitburst-gmbh.github.io/matomo-helm-chart/charts/redis-14.1.1.tgz
+    version: 14.1.1
+generated: "2021-09-29T09:52:41.293923598+02:00"
