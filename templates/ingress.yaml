@@ -39,7 +39,8 @@ spec:
             backend:
               service:
                 name: {{ $fullName }}
-                port: {{ $svcPort }}
+                port:
+                  number: {{ $svcPort }}
           {{- end }}
     {{- end }}
 {{- else if eq .Values.ingress.type "traefik" -}}
