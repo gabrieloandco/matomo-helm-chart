@@ -146,7 +146,8 @@ tags:
 
 redis:
   architecture: standalone
-  password: matomo
+  auth:
+    password: matomo
   cluster:
     enabled: false
 
