@@ -38,7 +38,7 @@ entries:
     version: 9.3.11
   matomo:
   - apiVersion: v2
-    appVersion: 4.3.1
+    appVersion: 4.3.0
     created: "2021-09-29T09:52:41.310362459+02:00"
     dependencies:
     - name: mariadb
@@ -57,8 +57,8 @@ entries:
     name: matomo
     type: application
     urls:
-    - https://bitburst-gmbh.github.io/matomo-helm-chart/matomo-4.3.1+01.tgz
-    version: 4.3.1+01
+    - https://bitburst-gmbh.github.io/matomo-helm-chart/matomo-4.3.0.tgz
+    version: 4.3.0
   redis:
   - annotations:
       category: Database
